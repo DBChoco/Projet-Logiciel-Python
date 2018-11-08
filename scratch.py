@@ -31,7 +31,7 @@ Hr =
 
 psat =
 
-Tsky = Ta*(0.711 + (0,005 * Trosé) + (7,3 * (10 ** -5) * (Trosé ** 2)) + 0,013 * math.cos((2*pi*t)/24))**1/4
+Tsky = Ta*(0.711 + (0.005 * Trosé) + (7,3 * (10 ** -5) * (Trosé ** 2)) + 0.013 * math.cos((2*pi*t)/24))**1/4
 
 Ha = (Me/Ma) * ((Hr * psat)/(ptot-(Hr*psat)))
 
