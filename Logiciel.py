@@ -33,15 +33,20 @@ import math
 #tempSurf est la temperature de la surface
 #tempToit est la temperature du toit
 ################
+
+#Ventillation
+################
+#J = #Quantité d'eau évaporé par seconde (poivre/banane)
+#Hamax = #Humidité absolue maximale
+################
 #####################################################################
 """
 #Block Environnement
 """
 
-def BlockEnvironnement(Pto,Ta,t,ptot):
-    psat =
+def environnement(Pto,Ta,t,ptot):
     
-    Fd= #Flux direct
+    psat =
 
     Hr =Pe/psat*100 #humidité relative
 
@@ -51,15 +56,18 @@ def BlockEnvironnement(Pto,Ta,t,ptot):
 
     Ha = (Me/Ma) * ((Hr * psat)/(ptot-(Hr*psat))) #Humidité absolue
 
-    Fi = 5.67*10**(-8)*Tsky #Flux indirect
-
-return Fi,Ha,Fd
+    Fi = 5.67*10**(-8)*Tsky**4 #Flux indirect
+    
+    Fd= #Flux direct
+    
+return [Fi,Fd,Ha]
 
 #####################################################################
 """
 #Block Effet-de-Serre
 """
-#def BlockEffetDeSerre(fluxD, fluxI, tempSerre,Q ):
+
+#def effetDeSerre(fluxD, fluxI, tempSerre,Q ):
 
 
 
@@ -67,3 +75,12 @@ return Fi,Ha,Fd
 """
 #Block Ventillation
 """
+
+def ventillation(J,Hamax,Ha=environnement(Pto,Ta,t,ptot)[1]):
+    
+    Qmin = J/(Hamax - Ha) #Débit d'air minimal (m³/s)
+    
+    print("Le débit d'air minimal en m³/s est de " Qmin " m³/s")             
+                 
+    return Qmin
+
