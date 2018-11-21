@@ -32,6 +32,16 @@ import math
 #Ft est le flux d'énérgie produit par le toit par la loie des corps noirs
 #tempSurf est la temperature de la surface
 #tempToit est la temperature du toit
+V = #vitesse du fluide
+L = #longueur de la plaque
+µ = #viscosité dynamique du fluide
+M = #masse volumique du fluide
+λ = #conductivité du fluide
+g = #Force de pesanteur
+∆T = #Difference de température
+cp = #Chaleur spécifique du fluide
+β = #Coefficient de dilatation
+
 ################
 
 #Ventillation
@@ -67,7 +77,36 @@ return [Fi,Fd,Ha]
 #Block Effet-de-Serre
 """
 
-#def effetDeSerre(fluxD, fluxI, tempSerre,Q ):
+def effetDeSerre(fluxD, fluxI, tempSerre,Q ):
+    
+    v = µ/M #viscosité cinématique du fluide
+    
+    Re = (V*L)/v
+    
+    Gr= (g*β*∆T*L*3)/(v*2) #Nombre de Grashof
+    
+    Pr = (µ*cp)/λ #Nombre de Prandtl
+    
+    if convection == 'Naturelle': #Nu = Nombre de Nusselt
+        #convection naturelle
+        if Re < 3*10**5:
+            #écoulement laminaire:
+            Nu = 0,479 . Gr**(1/4)
+        else:
+            #écoulement turbulent:
+            Nu = 0,13*((Gr*Pr)**(1/3))
+    else:
+        #convection forcée
+        if Re < 3.104:
+            #écoulement laminaire
+            Nu = 0,66*Pr**(1/3)*(Re**(1/2))
+        else:
+            #écoulement turbulent
+            Nu = 0,036*(Pr**(1/3))*(Re**(4/5))
+            
+    h = (λ*Nu)/L
+    
+    return h
 
 
 
