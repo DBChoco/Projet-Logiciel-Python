@@ -22,6 +22,7 @@ import math
 # Hr = #Humidité relative
 # pe = #pression partielle de vapeur
 # psat = #pression saturfante à temperature Trosé
+a = 0 #Permet de ne pas prendre en compte l'expression en cosinus dans la formule de Tsky, assignez une valeur de 0 ou 1 dépendant du cas.
 ################
 
 # Effet de Serre
@@ -33,15 +34,16 @@ import math
 # Ft est le flux d'énérgie produit par le toit par la loie des corps noirs
 # tempSurf est la temperature de la surface
 # tempToit est la temperature du toit
-V =  # vitesse du fluide
-L =  # longueur de la plaque
-µ =  # viscosité dynamique du fluide
-M =  # masse volumique du fluide
-λ =  # conductivité du fluide
-g =  # Force de pesanteur
-∆T =  # Difference de température
-cp =  # Chaleur spécifique du fluide
-β =  # Coefficient de dilatation
+#V =  # vitesse du fluide
+#L =  # longueur de la plaque
+#µ =  # viscosité dynamique du fluide
+#M =  # masse volumique du fluide
+#λ =  # conductivité du fluide
+#g =  # Force de pesanteur
+#dT =  # Difference de température
+#cp =  # Chaleur spécifique du fluide
+#β =  # Coefficient de dilatation
+#convexion = 'Forcée' ou 'Naturelle' #Type de convexion
 ################
 
 # Ventillation
@@ -52,10 +54,12 @@ m_eau_init = 3  # 3kg d'eau par kg de matière sèche
 m_eau_fin = 0, 1  # 0.1 kg d'eau par kg de matière sèche
 m_bananes = 0, 5  # masse de bananes a sécher en kg
 t = 8  # Durée du séchage en heures
-Ha_banane = #Humidité abosulue de la banane
-M_eau = #Masse molaire de l'eau
-M_s = #Masse molaire de la matière sèche contenue dans la banene
+Ha_banane =  # Humidité abosulue de la banane
+f_massique_seche = #Fraction massique de matière s!che dans la banane
+Hainitbananes = #humidité absolue initiale contenu dans les bananes 
+Hafinbananes = #humidité absolue finale contenu dans les bananes 
 ################
+
 #####################################################################
 """
 #Block Environnement
@@ -63,14 +67,13 @@ M_s = #Masse molaire de la matière sèche contenue dans la banene
 
 
 def environnement(Pto, Ta, t, ptot):
-    psat =
 
     pe = (Hr * psat) / 100  # pression partielle de vapeur
 
     Trose = 373.15 / (1 - math.log(101325 / ptot, math.e))  # Température de rosée
 
-    Tsky = Ta * (0.711 + (0.005 * Trose) + (7, 3 * (10 ** -5) * (Trose ** 2)) + 0.013 * math.cos(
-        (2 * math.pi * t) / 24)) ** 1 / 4
+    Tsky = (Ta * (0.711 + (0.005 * Trose) + (7, 3 * (10 ** -5) * (Trose ** 2)) + 0.013 * (a * math.cos(
+        (2 * math.pi * t) / 24))) ** 1 / 4) - 273,15
 
     Ha = (Me / Ma) * ((Hr * psat) / (ptot - (Hr * psat)))  # Humidité absolue
 
@@ -79,38 +82,36 @@ def environnement(Pto, Ta, t, ptot):
     Fd =  # Flux direct
 
 
-return [Fi, Fd, Ha]
+    return [Fi, Fd, Ha]
 
 #####################################################################
 """
-#Block Effet-de-Serre
+# Block Effet-de-Serre
 """
 
-
 def effetDeSerre(fluxD, fluxI, tempSerre, Q):
+
+
+
+def ConvexionH(µ, M, V, L, g, β, dT, cp, λ ,convexion):
+
     v = µ / M  # viscosité cinématique du fluide
 
-    Re = (V * L) / v
+    Re = (V * L) / v # Nombre de Reynolds
 
-    Gr = (g * β *∆T * L * 3) / (v * 2)  # Nombre de Grashof
+    Gr = (g * β * dT * L * 3) / (v * 2)  # Nombre de Grashof
 
     Pr = (µ * cp) / λ  # Nombre de Prandtl
 
-    if convection == 'Naturelle':  # Nu = Nombre de Nusselt
-        # convection naturelle
-        if Re < 3 * 10 ** 5:
-            # écoulement laminaire:
-            Nu = 0, 479.Gr ** (1 / 4)
-        else:
-            # écoulement turbulent:
+    if convection == 'Naturelle':  # Nu = Nombre de Nusselt & cas : convection naturelle
+        if Re < 3 * 10 ** 5: # écoulement laminaire:
+            Nu = 0, 479 * Gr ** (1 / 4)
+        else: # écoulement turbulent:
             Nu = 0, 13 * ((Gr * Pr) ** (1 / 3))
-    else:
-        # convection forcée
-        if Re < 3.104:
-            # écoulement laminaire
+    else: # cas : convection naturelle
+        if Re < 3.104: # écoulement laminaire
             Nu = 0, 66 * Pr ** (1 / 3) * (Re ** (1 / 2))
-        else:
-            # écoulement turbulent
+        else: # écoulement turbulent
             Nu = 0, 036 * (Pr ** (1 / 3)) * (Re ** (4 / 5))
 
     h = (λ * Nu) / L
@@ -125,16 +126,16 @@ def effetDeSerre(fluxD, fluxI, tempSerre, Q):
 
 
 def ventillation(J, Hamax, Ha=environnement(Pto, Ta, t, ptot)[1]):
-    
+
     t_sec = t * 60 * 60  # Temps de séchage en secondes
 
-    m_matiereseche = (m_eau_init * M_eau)/(Ha_banane * M_s) ##Attention contenu non verifié
+    m_matiereseche = f_massique_seche * m_bananes  #Masse de matière sèche
 
-    J = ((Hainitbananes - Hafinbananes) * m_matiereseche) / t_sec ##Attention contenu non verifié
+    J = ((Hainitbananes - Hafinbananes) * m_matiereseche) / t_sec  #Masse d'eau évaporé par seconde (contenue dans le poivre/banane)
 
     Qmin = J / (Hamax - Ha)  # Débit d'air minimal (m³/s)
 
-    print("Le débit d'air minimal en m³/s est de ",Qmin, " m³/s")
+    print("Le débit d'air minimal en m³/s est de ", Qmin, " m³/s")
 
     return Qmin
 
