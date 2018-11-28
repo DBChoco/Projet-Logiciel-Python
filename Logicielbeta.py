@@ -23,28 +23,7 @@ import math
 # pe = #pression partielle de vapeur
 # psat = #pression saturfante à temperature Trosé
 a = 0 #Permet de ne pas prendre en compte l'expression en cosinus dans la formule de Tsky, assignez une valeur de 0 ou 1 dépendant du cas.
-################
 
-# Effet de Serre
-################
-# Q est le debit d'air(m**3/s)
-# puissance
-# h est le coefficient d'échange de chaleur entre la surface et le toit
-# Fs est le flux d'énérgie produit par le sols par la loie des corps noirs
-# Ft est le flux d'énérgie produit par le toit par la loie des corps noirs
-# tempSurf est la temperature de la surface
-# tempToit est la temperature du toit
-#V =  # vitesse du fluide
-#L =  # longueur de la plaque
-#µ =  # viscosité dynamique du fluide
-#M =  # masse volumique du fluide
-#λ =  # conductivité du fluide
-#g =  # Force de pesanteur
-#dT =  # Difference de température
-#cp =  # Chaleur spécifique du fluide
-#β =  # Coefficient de dilatation
-#convexion = 'Forcée' ou 'Naturelle' #Type de convexion
-################
 
 # Ventillation
 ################
@@ -56,10 +35,33 @@ m_bananes = 0, 5  # masse de bananes a sécher en kg
 t = 8  # Durée du séchage en heures
 Ha_banane =  # Humidité abosulue de la banane
 f_massique_seche = #Fraction massique de matière s!che dans la banane
-Hainitbananes = #humidité absolue initiale contenu dans les bananes 
-Hafinbananes = #humidité absolue finale contenu dans les bananes 
+Hainitbananes = #humidité absolue initiale contenu dans les bananes
+Hafinbananes = #humidité absolue finale contenu dans les bananes
 ################
 
+
+# Effet de Serre
+################
+Q  = ventillation(J, Hamax, Ha=environnement(Pto, Ta, t, ptot)[1]) #ebit d'air(m**3/s)
+h =  #coefficient d'échange de chaleur entre la surface et le toit
+Fd = environnement(Pto, Ta, t, ptot)[1] #Flux direct
+Fi = environnement(Pto, Ta, t, ptot)[0] #Flux indirect
+sigma = 5.67*(10**(-8))
+T = 300
+
+
+###Convexion
+#V =  # vitesse du fluide
+#L =  # longueur de la plaque
+#µ =  # viscosité dynamique du fluide
+#M =  # masse volumique du fluide
+#λ =  # conductivité du fluide
+#g =  # Force de pesanteur
+#dT =  # Difference de température
+#cp =  # Chaleur spécifique du fluide
+#β =  # Coefficient de dilatation
+#convexion = 'Forcée' ou 'Naturelle' #Type de convexion
+################
 #####################################################################
 """
 #Block Environnement
@@ -70,26 +72,66 @@ def environnement(Pto, Ta, t, ptot):
 
     pe = (Hr * psat) / 100  # pression partielle de vapeur
 
-    Trose = 373.15 / (1 - math.log(101325 / ptot, math.e))  # Température de rosée
+    Trose = 373.15 / (1 - math.log(101325 / ptot * math.e))  # Température de rosée
 
-    Tsky = (Ta * (0.711 + (0.005 * Trose) + (7, 3 * (10 ** -5) * (Trose ** 2)) + 0.013 * (a * math.cos(
-        (2 * math.pi * t) / 24))) ** 1 / 4) - 273,15
+    Tsky = (Ta * (0.711 + (0.005 * Trose) + (7.3 * (10 ** -5) * (Trose ** 2)) + 0.013 * (a * math.cos(
+        (2 * math.pi * t) / 24))) ** 1 / 4) - 273.15
 
     Ha = (Me / Ma) * ((Hr * psat) / (ptot - (Hr * psat)))  # Humidité absolue
 
     Fi = 5.67 * 10 ** (-8) * Tsky ** 4  # Flux indirect
 
-    Fd =  # Flux direct
+    Fd = # Flux direct
 
 
     return [Fi, Fd, Ha]
 
 #####################################################################
 """
-# Block Effet-de-Serre
+#Block Ventillation
 """
 
-def effetDeSerre(fluxD, fluxI, tempSerre, Q):
+
+def ventillation(J, Hamax, Ha=environnement(Pto, Ta, t, ptot)[1]):
+
+    t_sec = t * 60 * 60  # Temps de séchage en secondes
+
+    m_matiereseche = f_massique_seche * m_bananes  #Masse de matière sèche
+
+    J = ((Hainitbananes - Hafinbananes) * m_matiereseche) / t_sec  #Masse d'eau évaporé par seconde (contenue dans le poivre/banane)
+
+    Qmin = J / (Hamax - Ha)  # Débit d'air minimal (m³/s)
+
+    print("Le débit d'air minimal en m³/s est de ", Qmin, " m³/s")
+
+    return Qmin
+
+
+#####################################################################
+"""
+# Block Effet-de-Serre
+"""
+def func(x):
+
+    P, Ts, Tp = x
+    eq = (P - h * (Ts - T) - h * (Tp - T), Fd + Fi - P - (sigma * Tp ** 4),
+          Fd + (sigma * Tp ** 4) - (sigma * Ts ** 4) - h * (Ts - T))
+
+    return eq
+
+
+def effetDeSerre(Fd, Fi, T, Q): #Entrées du block effet de serre: Flux direct, flux indirect, Temperature intérieur de la serre et le débit.
+
+    import numpy as np
+
+    from scipy.optimize import fsolve
+
+    P, Ts, Tp = fsolve(func, (1,1,1))
+
+
+    return P
+
+
 
 
 
@@ -117,25 +159,3 @@ def ConvexionH(µ, M, V, L, g, β, dT, cp, λ ,convexion):
     h = (λ * Nu) / L
 
     return h
-
-
-#####################################################################
-"""
-#Block Ventillation
-"""
-
-
-def ventillation(J, Hamax, Ha=environnement(Pto, Ta, t, ptot)[1]):
-
-    t_sec = t * 60 * 60  # Temps de séchage en secondes
-
-    m_matiereseche = f_massique_seche * m_bananes  #Masse de matière sèche
-
-    J = ((Hainitbananes - Hafinbananes) * m_matiereseche) / t_sec  #Masse d'eau évaporé par seconde (contenue dans le poivre/banane)
-
-    Qmin = J / (Hamax - Ha)  # Débit d'air minimal (m³/s)
-
-    print("Le débit d'air minimal en m³/s est de ", Qmin, " m³/s")
-
-    return Qmin
-
