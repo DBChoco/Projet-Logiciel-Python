@@ -8,27 +8,41 @@ Auteurs : Groupe n°33 projet
 #Import des paquets
 """
 import math
+#from scipy.optimize import fsolve
+
 
 """
 #Définition des variables utilisées
 """
+#donnée de base
+"""
+#en belgique
+"""
+#500g de banane
+#humInitial = 3 kg d'eau par kg de matiere seche
+#hum final = 0.1 kg d'eau par kg de matiere seche
+#temperature que l'on doit atteindre 65 degrés celsius
+#hum Max = 20%
+#rayonnement de lampe 900 W/m**2
+#
 # Environnement
 ################
-# ptot = #pression actuelle totale. Autrement dit la pression ambiante dans le lieu ou se trouve le séchoir.
-# Ta = #Temperature de l'air ambiante (en Kelvin)
-# Ma = #Masse molaire de l'air (sec)
-# Me = #Masse molaire de l'eau
-# t = #temps exprimé en heures de séchage
-# Hr = #Humidité relative
+altitude= 60 #altidude de ixelles par rapport a la mer de l'endroit ou il a le séchoire
+ptot = 101315*(1-(0.0065*altitude/288.15))**5.255 #pression actuelle totale. Autrement dit la pression ambiante dans le lieu ou se trouve le séchoir.(en Pa)
+Fd  = 900# Flux direct produit par les lampes (W/m**2)
+Ta = 291.15 #(a l'interieur du batiment de teste) Temperature de l'air ambiante (en Kelvin)
+Na = 0.8 * 2 * 14.01 + 0.2 *2*16#Masse molaire de l'air (sec) (mol/g)
+Ne = 2* 1.005 +16 #Masse molaire de l'eau (mol/g)
+t = 8#temps maximal exprimé en heures de séchage (heure)
+Hr = 85 #pour la belgique en % #Humidité relative
 # pe = #pression partielle de vapeur
-# psat = #pression saturfante à temperature Trosé
+psat = ptot #pression saturfante à temperature Trosé
 a = 0 #Permet de ne pas prendre en compte l'expression en cosinus dans la formule de Tsky, assignez une valeur de 0 ou 1 dépendant du cas.
 ################
 
 # Effet de Serre
 ################
 # Q est le debit d'air(m**3/s)
-# puissance
 # h est le coefficient d'échange de chaleur entre la surface et le toit
 # Fs est le flux d'énérgie produit par le sols par la loie des corps noirs
 # Ft est le flux d'énérgie produit par le toit par la loie des corps noirs
@@ -49,15 +63,14 @@ a = 0 #Permet de ne pas prendre en compte l'expression en cosinus dans la formul
 # Ventillation
 ################
 # J = #Quantité d'eau évaporé par seconde (poivre/banane)
-# Hamax = #Humidité absolue maximale
+HrMax = 20 #Humidité relatif maximal
+Hamax = 0.6217*HrMax*psat/(ptot-HrMax*psat) #Humidité absolue maximale
 m_eau_init = 3  # 3kg d'eau par kg de matière sèche
-m_eau_fin = 0, 1  # 0.1 kg d'eau par kg de matière sèche
-m_bananes = 0, 5  # masse de bananes a sécher en kg
-t = 8  # Durée du séchage en heures
-Ha_banane =  # Humidité abosulue de la banane
-f_massique_seche = #Fraction massique de matière s!che dans la banane
-Hainitbananes = #humidité absolue initiale contenu dans les bananes 
-Hafinbananes = #humidité absolue finale contenu dans les bananes 
+m_eau_fin = 0.1  # 0.1 kg d'eau par kg de matière sèche
+m_bananes = 0.5  # masse de bananes a sécher en kg
+f_massique_seche = 0.25#Fraction massique de matière s!che dans la banane
+Hainitbananes = 3 #humidité absolue initiale contenu dans les bananes
+Hafinbananes = 0.909#humidité absolue finale contenu dans les bananes
 ################
 
 #####################################################################
@@ -66,20 +79,20 @@ Hafinbananes = #humidité absolue finale contenu dans les bananes
 """
 
 
-def environnement(Pto, Ta, t, ptot):
+def environnement(Pto, Ta, t, ptot,Fd):
 
-    pe = (Hr * psat) / 100  # pression partielle de vapeur
+    #pe = (Hr * psat) / 100  # pression partielle de vapeur
 
     Trose = 373.15 / (1 - math.log(101325 / ptot, math.e))  # Température de rosée
 
     Tsky = (Ta * (0.711 + (0.005 * Trose) + (7, 3 * (10 ** -5) * (Trose ** 2)) + 0.013 * (a * math.cos(
-        (2 * math.pi * t) / 24))) ** 1 / 4) - 273,15
+        (2 * math.pi * t) / 24))) ** 1 / 4) - 273,15 #en celsius
 
-    Ha = (Me / Ma) * ((Hr * psat) / (ptot - (Hr * psat)))  # Humidité absolue
+    Ha = (Ne / Na) * ((Hr * psat) / (ptot - (Hr * psat)))  # Humidité absolue
 
     Fi = 5.67 * 10 ** (-8) * Tsky ** 4  # Flux indirect
 
-    Fd =  # Flux direct
+
 
 
     return [Fi, Fd, Ha]
@@ -90,10 +103,12 @@ def environnement(Pto, Ta, t, ptot):
 """
 
 def effetDeSerre(fluxD, fluxI, tempSerre, Q):
+    puissance = 0
+    return puissance
 
 
 
-def ConvexionH(µ, M, V, L, g, β, dT, cp, λ ,convexion):
+def ConvexionH(µ, M, V, L, g, β, dT, cp, λ ,convection):
 
     v = µ / M  # viscosité cinématique du fluide
 
@@ -110,9 +125,9 @@ def ConvexionH(µ, M, V, L, g, β, dT, cp, λ ,convexion):
             Nu = 0, 13 * ((Gr * Pr) ** (1 / 3))
     else: # cas : convection naturelle
         if Re < 3.104: # écoulement laminaire
-            Nu = 0, 66 * Pr ** (1 / 3) * (Re ** (1 / 2))
+            Nu = 0.66 * Pr ** (1 / 3) * (Re ** (1 / 2))
         else: # écoulement turbulent
-            Nu = 0, 036 * (Pr ** (1 / 3)) * (Re ** (4 / 5))
+            Nu = 0.036 * (Pr ** (1 / 3)) * (Re ** (4 / 5))
 
     h = (λ * Nu) / L
 
@@ -125,7 +140,7 @@ def ConvexionH(µ, M, V, L, g, β, dT, cp, λ ,convexion):
 """
 
 
-def ventillation(J, Hamax, Ha=environnement(Pto, Ta, t, ptot)[1]):
+def ventillation( Hamax, Ha):
 
     t_sec = t * 60 * 60  # Temps de séchage en secondes
 
