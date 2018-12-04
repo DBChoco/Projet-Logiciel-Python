@@ -20,15 +20,17 @@ import scipy.optimize
 altitude= 60 #altidude de ixelles par rapport a la mer de l'endroit ou il a le séchoire
 ptot = 101315*(1-(0.0065*altitude/288.15))**5.255 #pression actuelle totale. Autrement dit la pression ambiante dans le lieu ou se trouve le séchoir.(en Pa)
 Fd  = 900# Flux direct produit par les lampes (W/m**2)
-Ta = 291.15 #(a l'interieur du batiment de teste) Temperature de l'air ambiante (en Kelvin)
+Tamb = 291.15 #(a l'interieur du batiment de teste) Temperature de l'air ambiante (en Kelvin)
 Na = 0.8 * 2 * 14.01 + 0.2 *2*16#Masse molaire de l'air (sec) (mol/g)
 Ne = 2* 1.005 +16 #Masse molaire de l'eau (mol/g)
 t = 8#temps maximal exprimé en heures de séchage (heure)
 Hr = 85 #pour la belgique en % #Humidité relative
-psat = ptot/75 #pression saturfante à temperature Trosé
+psat = 2.3 * 101315 #pression saturfante à temperature Tamb
 Me = 18 #Masse molaire eau
 Ma = 28.976 #Masse molaire air
 a = 0 #Permet de ne pas prendre en compte l'expression en cosinus dans la formule de Tsky, assignez une valeur de 0 ou 1 dépendant du cas.
+R = 8.314  #Constante universelle des gaz parfaits
+L = 2.454*18  #chaleur latente de vaporisation de l'eau
 
 
 
@@ -47,7 +49,7 @@ Hafinbananes = 0.909#humidité absolue finale contenu dans les bananes
 
 # Effet de Serre
 ################
-h = 4 #coefficient d'échange de chaleur entre la surface et le toit
+h = 2 #coefficient d'échange de chaleur entre la surface et le toit
 sigma = 5.67*(10**(-8))
 T = 300
 
@@ -71,9 +73,9 @@ T = 300
 
 pe = (Hr * psat) / 100  # pression partielle de vapeur
 
-Trose = (373.15 / (1 - math.log((101325 / ptot) * math.e))) - 273.15  # Température de rosée
+Trose = (math.log(pe/psat,math.e)*(-R/L)+1/Tamb)**(-1)   # Température de rosée
 
-Tsky = (Ta * (0.711 + (0.005 * Trose) + (7.3 * (10 ** -5) * (Trose ** 2)) + 0.013 * (a * math.cos((2 * math.pi * t) / 24))) ** 1 / 4) - 273.15
+Tsky = Tamb * (0.711 + (0.005 * Trose) + (7.3 * (10 ** -5) * Trose ** 2) + (0.013 * (a * math.cos((2 * math.pi * t) / 24))) ** (1 / 4))
 
 Ha = (Me / Ma) * ((Hr * psat) / (ptot - (Hr * psat)))  # Humidité absolue
 
@@ -112,7 +114,8 @@ def func(x):
 
     P, Ts, Tp = x
 
-    return P - h * (Ts - T) - h * (Tp - T), Fd + Fi - P - (sigma * Tp ** 4), Fd + (sigma * Tp ** 4) - (sigma * Ts ** 4) - h * (Ts - T)
+    return P - h * (Ts - T) - h * (Tp - T), Fd + Fi - P - (sigma * Tp ** 4), Fd + (sigma * Tp ** 4) - (sigma * Ts ** 4) -\
+           h * (Ts - T)
 
 import numpy as np
 
