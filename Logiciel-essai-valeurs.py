@@ -25,16 +25,15 @@ Na = 0.8 * 2 * 14.01 + 0.2 *2*16#Masse molaire de l'air (sec) (mol/g)
 Ne = 2* 1.005 +16 #Masse molaire de l'eau (mol/g)
 t = 8#temps maximal exprimé en heures de séchage (heure)
 Hr = 85 #pour la belgique en % #Humidité relative
-psat = ptot #pression saturfante à temperature Trosé
+psat = ptot/75 #pression saturfante à temperature Trosé
 Me = 18 #Masse molaire eau
 Ma = 28.976 #Masse molaire air
 a = 0 #Permet de ne pas prendre en compte l'expression en cosinus dans la formule de Tsky, assignez une valeur de 0 ou 1 dépendant du cas.
-################
+
 
 
 # Ventillation
 ################
-# J = #Quantité d'eau évaporé par seconde (poivre/banane)
 HrMax = 20 #Humidité relatif maximal
 Hamax = 0.6217*HrMax*psat/(ptot-HrMax*psat) #Humidité absolue maximale
 m_eau_init = 3  # 3kg d'eau par kg de matière sèche
@@ -43,7 +42,7 @@ m_bananes = 0.5  # masse de bananes a sécher en kg
 f_massique_seche = 0.25#Fraction massique de matière s!che dans la banane
 Hainitbananes = 3 #humidité absolue initiale contenu dans les bananes
 Hafinbananes = 0.909#humidité absolue finale contenu dans les bananes
-################
+
 
 
 # Effet de Serre
@@ -72,7 +71,7 @@ T = 300
 
 pe = (Hr * psat) / 100  # pression partielle de vapeur
 
-Trose = 373.15 / (1 - math.log(101325 / ptot * math.e))  # Température de rosée
+Trose = (373.15 / (1 - math.log((101325 / ptot) * math.e))) - 273.15  # Température de rosée
 
 Tsky = (Ta * (0.711 + (0.005 * Trose) + (7.3 * (10 ** -5) * (Trose ** 2)) + 0.013 * (a * math.cos((2 * math.pi * t) / 24))) ** 1 / 4) - 273.15
 
@@ -113,13 +112,15 @@ def func(x):
 
     P, Ts, Tp = x
 
-    return P - h * (Ts - T) - h * (Tp - T), Fd + Fi - P - (sigma * Tp ** 4),Fd + (sigma * Tp ** 4) - (sigma * Ts ** 4) - h * (Ts - T)
+    return P - h * (Ts - T) - h * (Tp - T), Fd + Fi - P - (sigma * Tp ** 4), Fd + (sigma * Tp ** 4) - (sigma * Ts ** 4) - h * (Ts - T)
 
 import numpy as np
 
 from scipy.optimize import fsolve
 
 P,Ts,Tp = fsolve(func,(1,1,1))
+
+print('P = ',P,'Ts = ',Ts,'Tp = ',Tp)
 
 
 
