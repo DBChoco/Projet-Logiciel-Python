@@ -17,27 +17,28 @@ import scipy.optimize
 """
 # Environnement
 ################
-altitude= 60 #altidude de ixelles par rapport a la mer de l'endroit ou il a le séchoire
-ptot = 101315*(1-(0.0065*altitude/288.15))**5.255 #pression actuelle totale. Autrement dit la pression ambiante dans le lieu ou se trouve le séchoir.(en Pa)
-Fd = 900# Flux direct produit par les lampes (W/m**2)
-Tamb = 291.15 #(a l'interieur du batiment de teste) Temperature de l'air ambiante (en Kelvin)
-Na = 0.8 * 2 * 14.01 + 0.2 *2*16#Masse molaire de l'air (sec) (mol/g)
-Ne = 2* 1.005 +16 #Masse molaire de l'eau (mol/g)
-t = 8#temps maximal exprimé en heures de séchage (heure)
-Hr = 80 #pour la belgique en % #Humidité relative
-psat = 2.3 * 101315 #pression saturfante à temperature Tamb
-Me = 18 #Masse molaire eau
-Ma = 28.976 #Masse molaire air
-a = 0 #Permet de ne pas prendre en compte l'expression en cosinus dans la formule de Tsky, assignez une valeur de 0 ou 1 dépendant du cas.
-R = 8.314  #Constante universelle des gaz parfaits
-L = 2.454*18  #chaleur latente de vaporisation de l'eau
+altitude= 60  # altidude de ixelles par rapport a la mer de l'endroit ou il a le séchoire
+patm = 101315  # *(1-(0.0065*altitude/288.15))**5.255 #pression actuelle totale. Autrement dit la pression ambiante dans le lieu ou se trouve le séchoir.(en Pa)
+Fd = 900  # Flux direct produit par les lampes (W/m**2)
+Tamb = 291.15  # (a l'interieur du batiment de teste) Temperature de l'air ambiante (en Kelvin)
+Na = 0.8 * 2 * 14.01 + 0.2 *2*16  # Masse molaire de l'air (sec) (mol/g)
+Ne = 2* 1.005 +16  # Masse molaire de l'eau (mol/g)
+t = 8  # temps maximal exprimé en heures de séchage (heure)
+Hr = 0.80  # pour la belgique en % #Humidité relative
+psat = 2.3 * 10**3  # pression saturfante à temperature Tamb
+Me = 18  # Masse molaire eau
+Ma = 28.976  # Masse molaire air
+a = 0  # Permet de ne pas prendre en compte l'expression en cosinus dans la formule de Tsky, assignez une valeur de 0
+# ou 1 dépendant du cas.
+R = 8.314  # Constante universelle des gaz parfaits
+L = 2.454*18  # chaleur latente de vaporisation de l'eau
 
 
 
 # Ventillation
 ################
 HrMax = 20 #Humidité relatif maximal
-Hamax = 0.6217*HrMax*psat/(ptot-HrMax*psat) #Humidité absolue maximale
+Hamax = 0.6217*HrMax*psat/(patm-HrMax*psat) #Humidité absolue maximale
 m_eau_init = 3  # 3kg d'eau par kg de matière sèche
 m_eau_fin = 0.1  # 0.1 kg d'eau par kg de matière sèche
 m_bananes = 0.5  # masse de bananes a sécher en kg
@@ -71,15 +72,13 @@ T = 300
 #Block Environnement
 """
 
-pe = (Hr * psat) / 100  #Pression partielle de vapeur
+pe = (Hr * psat)  #Pression partielle de vapeur
 
 Trose = (math.log(pe/psat, math.e) * (-R/L) + 1/Tamb) ** (-1)   #Température de rosée
 
-Tsky = Tamb * (0.711 + (0.005 * Trose) + (7.3 * (10 ** -5) * Trose ** 2) + (0.013 * (a * math.cos((2 * math.pi * t) / 24))) ** (1 / 4))
+Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2) +(0.013*a*(math.cos((2 * math.pi * t) / 24)))**(1/4)) #Tsky
 
-Ha = (Me / Ma) * (((Hr * psat)/100) / (ptot - (Hr * psat)/100))  #Humidité absolue
-
-print((Hr * psat)/100)
+Ha = (Me / Ma) * ((Hr * psat) / (patm - (Hr * psat)))  #Humidité absolue
 
 Fi = 5.67 * 10 ** (-8) * Tsky ** 4  #Flux indirect
 
@@ -123,7 +122,7 @@ import numpy as np
 
 from scipy.optimize import fsolve
 
-P,Ts,Tp = fsolve(func,(1,1,1))
+P,Ts,Tp = fsolve(func,(1,1,1 ))
 
 print('P = ',P,'Ts = ',Ts,'Tp = ',Tp)
 
