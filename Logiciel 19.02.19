@@ -49,12 +49,12 @@ Hamax = 0.6217 * HrMax * psat / (patm - HrMax * psat)  #Humidite absolue maximal
 ################
 #V =  # vitesse du fluide
 #L =  # longueur de la plaque
-#mu =  # viscosite dynamique du fluide
-#M =  # masse volumique du fluide
-#lambdaa =  # conductivite du fluide
-#g =  # Force de pesanteur
+mu = 1.8*10**(-5) # viscosite dynamique du fluide
+M = 1.225 # (kg/m**3) masse volumique du fluide
+lambdaa = 0.0262  # (W/m.K) conductivite du fluide
+g =  9.81 # Force de pesanteur
 #dT =  # Difference de temperature
-#cp =  # Chaleur specifique du fluide
+cp = 1004  # (J/Kg.K) Chaleur specifique du fluide
 #beta =  # Coefficient de dilatation
 
 # Effet de Serre
@@ -111,6 +111,7 @@ print("Le debit d'air minimal en m^3/s est de ", Qmin, " m^3/s")
 #Convexion
 """
 
+
 def ConvexionH(mu, M, V, L, g, beta, dT, cp, lambdaa ,convexion):
 
     v = mu / M  # viscosite cinematique du fluide
@@ -126,18 +127,18 @@ def ConvexionH(mu, M, V, L, g, beta, dT, cp, lambdaa ,convexion):
     else:
         convexion = 'Naturelle'
 
-    if convection == 'Naturelle':  # Nu = Nombre de Nusselt & cas : convection naturelle
+    if convexion == 'Naturelle':  # Nu = Nombre de Nusselt & cas : convection naturelle
         if Re < 3 * 10 ** 5: # ecoulement laminaire:
-            Nu = 0, 479 * Gr ** (1 / 4)
+            Nu = 0.479 * Gr ** (1 / 4)
         else: # ecoulement turbulent:
-            Nu = 0, 13 * ((Gr * Pr) ** (1 / 3))
+            Nu = 0.13 * ((Gr * Pr) ** (1 / 3))
     else: # cas : convection naturelle
         if Re < 3.104: # ecoulement laminaire
-            Nu = 0, 66 * Pr ** (1 / 3) * (Re ** (1 / 2))
+            Nu = 0.66 * Pr ** (1 / 3) * (Re ** (1 / 2))
         else: # ecoulement turbulent
-            Nu = 0, 036 * (Pr ** (1 / 3)) * (Re ** (4 / 5))
+            Nu = 0.036 * (Pr ** (1 / 3)) * (Re ** (4 / 5))
 
-    h = (lamda * Nu) / L
+    h = (lambdaa * mu) / L
 
     return h
 
@@ -154,8 +155,12 @@ def func(x):
            - h * (Ts - T)
 
 
-P, Ts, Tp = fsolve(func, (1, 1, 1))
+def effet_de_serre():
+    P, Ts, Tp = fsolve(func, (1, 1, 1))
+    return P, Ts, Tp
 
+
+P, Ts, Tp = effet_de_serre()
 print('La puissance et de ', P, 'W/m^2')
 
 
