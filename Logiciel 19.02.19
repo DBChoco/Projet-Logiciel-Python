@@ -40,52 +40,54 @@ altitude = 60  #altidude de ixelles par rapport a la mer de l'endroit ou il a le
 patm = 101315 * (1 - (0.0065 * altitude / 288.15)) ** 5.255 #pression actuelle totale. Autrement dit la pression
                                                                 # ambiante dans le lieu ou se trouve le sechoir.(en Pa)
 Fd = 900  # Flux direct produit par les lampes (W/m**2)
-Tamb = 273.5+20  # (a l'interieur du batiment de teste) Temperature de l'air ambiante (en Kelvin)
+Tref = 273.5 + 20  # (a l'interieur du batiment de teste) Temperature de l'air ambiante (en Kelvin)
 Hr = 0.65  #pour la belgique en % #Humidite relative
 psat = 2.3 * 10 ** 3  #pression saturfante a temperature Tamb
 Hamax = 0.6217 * HrMax * psat / (patm - HrMax * psat)  #Humidite absolue maximale
 
 # Convection
 ################
-#V =  # vitesse du fluide
-#L =  # longueur de la plaque
-mu = 1.8*10**(-5) # viscosite dynamique du fluide
-M = 1.225 # (kg/m**3) masse volumique du fluide
+# V #vitesse du fluide
+L = 0.3 # longueur de la plaque
+mu = 1.8*10**(-5)  # (Pa.s) viscosite dynamique du fluide
+rho = 1.225  # (kg/m**3) masse volumique du fluide
 lambdaa = 0.0262  # (W/m.K) conductivite du fluide
 g =  9.81 # Force de pesanteur
 #dT =  # Difference de temperature
 cp = 1004  # (J/Kg.K) Chaleur specifique du fluide
-#beta =  # Coefficient de dilatation
+beta = 1/(273.15+65) # Coefficient de dilatation
 
 # Effet de Serre
 ################
-h = 2  # coefficient d'echange de chaleur entre la surface et le toit
+h = 4  # coefficient d'echange de chaleur entre la surface et le toitµ
+T = 320
 
 #####################################################################
 """
 #Block Environnement
 """
-def psat(T):
-    psatT = e**((La/R)*(1/Tamb - 1/T))*psat
+def psat_(Tamb):
+    psatT = 2.718**((La/R)*(1/Tamb - 1/Tref))*psat
     return psatT
 
-def environnement():
-    pe = (Hr * psat)  # Pression partielle de vapeur
+Tamb = 273.15 + 25
 
-    Trose = (math.log(pe / psat, math.e) * (-R / L) + 1 / Tamb) ** (-1)  # Temperature de rosee
+psatT = psat_(Tamb)
 
-    Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))  # Tsky
+pe = (Hr * psat)  # Pression partielle de vapeur
 
-    Ha = (Me / Ma) * ((Hr * psat) / (patm - (Hr * psat)))  # Humidite absolue
+Trose = (math.log(pe / psat, math.e) * (-R / L) + 1 / Tamb) ** (-1)  # Temperature de rosee
 
-    Fi = 5.67 * 10 ** (-8) * Tsky ** 4  # Flux indirect
+Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))  # Tsky
 
-    # Fd = 900  #Flux direct
+Ha = (Me / Ma) * ((Hr * psat) / (patm - (Hr * psat)))  # Humidite absolue
 
-    print('pe = ', pe, '\n', 'Trose = ', Trose, '\n', 'Tsky = ', Tsky, '\n', 'Ha = ', Ha, '\n', 'Fi = ', Fi, '\n',
-          'Fd = ', Fd)  # debug
+Fi = 5.67 * 10 ** (-8) * Tsky ** 4  # Flux indirect
 
-    return Fd, Fi, Ha
+# Fd = 900  #Flux direct
+
+print('pe = ', pe, '\n', 'Trose = ', Trose, '\n', 'Tsky = ', Tsky, '\n', 'Ha = ', Ha, '\n', 'Fi = ', Fi, '\n',
+      'Fd = ', Fd)  # debug
 
 
 ##########################################
@@ -104,7 +106,7 @@ Qmin = J / (Hamax - Ha)  # Debit d'air minimal (m^3/s)
 
 print("Le debit d'air minimal en m^3/s est de ", Qmin, " m^3/s")
 
-# print('t_sec = ',t_sec,'m_matiereseche = ',m_matiereseche,'J = ',J,'Qmin = ',Qmin)  #debug
+print('t_sec = ',t_sec,'m_matiereseche = ',m_matiereseche,'J = ',J,'Qmin = ',Qmin)  #debug
 
 ##########################################
 """
@@ -112,35 +114,29 @@ print("Le debit d'air minimal en m^3/s est de ", Qmin, " m^3/s")
 """
 
 
-def ConvexionH(mu, M, V, L, g, beta, dT, cp, lambdaa ,convexion):
+def ConvectionH(mu, rho, L, g, beta, dT, cp, lambdaa):
 
-    v = mu / M  # viscosite cinematique du fluide
+    alpha = lambdaa/(rho * cp)
 
-    Re = (V * L) / v # Nombre de Reynolds
+    V = Qmin/0.0025
 
-    Gr = (g * beta * dT * L * 3) / (v * 2)  # Nombre de Grashof
+    v = mu / rho  # viscosite cinematique du fluide
+
+    Re = (V * L) / v  # Nombre de Reynolds
+
+    Gr = (g * beta * dT * L**3 * rho**2) / mu**2  # Nombre de Grashof
 
     Pr = (mu * cp)/lambdaa  # Nombre de Prandtl
 
-    if Gr/Re < 1:
-        convexion = 'Forcee'
-    else:
-        convexion = 'Naturelle'
+    Ra = Pr*Gr
 
-    if convexion == 'Naturelle':  # Nu = Nombre de Nusselt & cas : convection naturelle
-        if Re < 3 * 10 ** 5: # ecoulement laminaire:
-            Nu = 0.479 * Gr ** (1 / 4)
-        else: # ecoulement turbulent:
-            Nu = 0.13 * ((Gr * Pr) ** (1 / 3))
-    else: # cas : convection naturelle
-        if Re < 3.104: # ecoulement laminaire
-            Nu = 0.66 * Pr ** (1 / 3) * (Re ** (1 / 2))
-        else: # ecoulement turbulent
-            Nu = 0.036 * (Pr ** (1 / 3)) * (Re ** (4 / 5))
+    Nu = 0.18 * Ra**(1/4)
+        #0.54*(Ra/4)
 
-    h = (lambdaa * mu) / L
+    h = (Nu * lambdaa) / L
 
     return h
+
 
 ##########################################
 """
@@ -159,9 +155,21 @@ def effet_de_serre():
     P, Ts, Tp = fsolve(func, (1, 1, 1))
     return P, Ts, Tp
 
-
-P, Ts, Tp = effet_de_serre()
-print('La puissance et de ', P, 'W/m^2')
-
+##def dimensions(P):
 
 #####################################################################
+
+# Lancement du logiciel
+
+h = 6
+P, Ts, Tp = effet_de_serre()
+dT = (Tp - (273.15 + 25))
+print(dT)
+h = ConvectionH(mu, rho, L, g, beta, dT, cp, lambdaa)
+P, Ts, Tp = effet_de_serre()
+print(Tp)
+print('La puissance et de ', P, 'W/m^2')
+print (P, h)
+
+
+
