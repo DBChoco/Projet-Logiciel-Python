@@ -16,7 +16,9 @@ from scipy.optimize import fsolve
 """
 #Definition des variables utilisees
 """
-
+#condition environment
+Tamb = 273.5+25
+Tvoulu = 273.5 + 65 #temperature idéal pour le séchoire
 # General
 ################
 Ma = 0.8 * 2 * 14.01 + 0.2 * 2 * 16  # Masse molaire de l'air (sec) (mol/g)
@@ -40,10 +42,9 @@ altitude = 60  #altidude de ixelles par rapport a la mer de l'endroit ou il a le
 patm = 101315 * (1 - (0.0065 * altitude / 288.15)) ** 5.255 #pression actuelle totale. Autrement dit la pression
                                                                 # ambiante dans le lieu ou se trouve le sechoir.(en Pa)
 Fd = 900  # Flux direct produit par les lampes (W/m**2)
-Tref = 273.5 + 20  # (a l'interieur du batiment de teste) Temperature de l'air ambiante (en Kelvin)
+Tref = 273.5 + 20  # température de référence (en Kelvin)
 Hr = 0.65  #pour la belgique en % #Humidite relative
-psat = 2.3 * 10 ** 3  #pression saturfante a temperature Tamb
-Hamax = 0.6217 * HrMax * psat / (patm - HrMax * psat)  #Humidite absolue maximale
+psatref = 2.3 * 10 ** 3  #pression saturfante a temperature Tref
 
 # Convection
 ################
@@ -70,12 +71,12 @@ Cva = 1,256*10**(3)#Capacité calorifique volumique de l'air(J m**(−3) K**(−
 #Block Environnement
 """
 def psat_(Tamb):
-    psatT = 2.718**((La/R)*(1/Tamb - 1/Tref))*psat
+    psatT = 2.718**((La/R)*(1/Tamb - 1/Tref))*psatref
     return psatT
 
-Tamb = 273.15 + 25
+psat = psat_(Tamb)
 
-psatT = psat_(Tamb)
+Hamax = 0.6217 * HrMax * psat / (patm - HrMax * psat)  #Humidite absolue maximale
 
 pe = (Hr * psat)  # Pression partielle de vapeur
 
@@ -158,9 +159,14 @@ def effet_de_serre():
     P, Ts, Tp = fsolve(func, (1, 1, 1))
     return P, Ts, Tp
 
-##def dimensions(P):
-#puissance totale
-Ptot = Qmin*Cva
+"""
+Block dimensions
+"""
+def dimensions(P):
+    # puissance totale
+    Ptot = Qmin*Cva*(Tvoulu-Tamb)+ J * La
+    Surface  = Ptot/P
+    return Surface
 
 #####################################################################
 
@@ -175,6 +181,8 @@ P, Ts, Tp = effet_de_serre()
 print(Tp)
 print('La puissance et de ', P, 'W/m^2')
 print (P, h)
+Surface = dimensions(P)
+print("dimensions: ", Surface," m**2")
 
 
 
