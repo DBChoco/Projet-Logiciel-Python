@@ -64,7 +64,8 @@ h = 4  # coefficient d'echange de chaleur entre la surface et le toitµ
 T = 320
 
 ###puissance
-Cva = 1,256*10**(3)#Capacité calorifique volumique de l'air(J m**(−3) K**(−1))
+Cva = 1.256*10**(3)#Capacité calorifique volumique de l'air(J m**(−3) K**(−1))
+
 
 #####################################################################
 """
