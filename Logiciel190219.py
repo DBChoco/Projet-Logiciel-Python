@@ -44,6 +44,7 @@ Ma = 0.8 * 2 * 14.01 + 0.2 * 2 * 16  # Masse molaire de l'air (sec) (mol/g)
 Me = 2 * 1.005 + 16  # Masse molaire de l'eau (mol/g)
 R = 8.314  # Constante universelle des gaz parfaits
 L = 2.454 * 18  # chaleur latente de vaporisation de l'eau
+
 sigma = 5.67 * (10 ** (-8))
 La = 2250*10**3 # enthalpie de vaporisation / chaleur latente de l'eau (j/kg)
 
@@ -53,10 +54,11 @@ patm = 101315 * (1 - (0.0065 * altitude / 288.15)) ** 5.255 #pression actuelle t
 Tref = 273.5 + 20  # température de référence (en Kelvin)
 psatref = 2.3 * 10 ** 3  #pression saturfante a temperature Tref
 
+
 # Convection
 ################
 # V #vitesse du fluide
-L = 0.3 # longueur de la plaque
+L = 0.8 # longueur de la plaque
 mu = 1.8*10**(-5)  # (Pa.s) viscosite dynamique du fluide
 rho = 1.225  # (kg/m**3) masse volumique du fluide
 lambdaa = 0.0262  # (W/m.K) conductivite du fluide
@@ -67,7 +69,7 @@ beta = 1/(273.15+65) # Coefficient de dilatation
 
 # Effet de Serre
 ################
-h = 4  # coefficient d'echange de chaleur entre la surface et le toitµ
+h = 4  # coefficient d'echange de chaleur entre la surface et le toit
 #T = 320
 
 ###puissance
@@ -78,19 +80,15 @@ Cva = 1.256*10**(3)#Capacité calorifique volumique de l'air(J m**(−3) K**(−
 """
 #Block Environnement
 """
+
 def psat_(Tamb):
     psatT = math.e**((La/R)*(1/Tamb - 1/Tref))+psatref
     return psatT
 
 psat = psat_(Tamb)
-
-
 Hamax = (Me / Ma) * HrMax * psat / (patm - HrMax * psat)# * 0.6217  #Humidite absolue maximale
-
 pe = (Hr * psat)  # Pression partielle de vapeur
-
-Trose = (math.log(pe / psat, math.e) * (-R / L) + 1 / Tamb) ** (-1)  # Temperature de rosee
-
+Trose = (math.log((pe / psat), math.e) * (-R / La) + 1 / Tamb) ** (-1) -237.15  # Temperature de rosee
 Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))  # Tsky
 
 Ha = (Me / Ma) * (pe / (patm - pe))  # Humidite absolue
@@ -128,9 +126,9 @@ def ConvectionH(mu, rho, L, g, beta, dT, cp, lambdaa):
 
     alpha = lambdaa/(rho * cp)
 
-    V = Qmin/0.0025
+    V = Qmin/0.0030
 
-    v = mu / rho  # viscosite cinematique du fluide
+    v = mu / rho  # viscosite cinematique du fluide m**2/s
 
     Re = (V * L) / v  # Nombre de Reynolds
 
@@ -156,14 +154,15 @@ def ConvectionH(mu, rho, L, g, beta, dT, cp, lambdaa):
 
 def func(x):
     P, Ts, Tp = x
+    return P - h * (Ts - Tamb) - h * (Tp - Tamb), Fd + Fi - P - (sigma * Tp ** 4), Fd + (sigma * Tp ** 4) - (sigma * Ts ** 4)\
+           - h * (Ts - Tamb)
 
-    return P - h * (Ts - Tvoulu) - h * (Tp - Tvoulu), Fd + Fi - P - (sigma * Tp ** 4), Fd + (sigma * Tp ** 4) - (sigma * Ts ** 4) \
-           - h * (Ts - Tvoulu)
 
 
 def effet_de_serre():
     P, Ts, Tp = fsolve(func, (1, 1, 1))
     return P, Ts, Tp
+
 
 """
 Block dimensions
@@ -179,9 +178,10 @@ def dimensions(P):
 
 # Lancement du logiciel
 
-h = 6
+h = 3
 P, Ts, Tp = effet_de_serre()
 dT = (Tp - (273.15 + 25))
+
 print("le delta T",dT)
 h = ConvectionH(mu, rho, L, g, beta, dT, cp, lambdaa)
 P, Ts, Tp = effet_de_serre()
@@ -190,6 +190,8 @@ print('La puissance est de ', P, 'W/m^2')
 print ("le h est ", h)
 Surface = dimensions(P)
 print("dimensions: ", Surface," m**2")
+
+
 
 
 

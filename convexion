@@ -21,7 +21,7 @@ def ConvexionH(µ, M, V, L, g, β, dT, cp, λ ,convexion):
 
     Pr = (µ * cp) / λ  # Nombre de Prandtl
 
-    if convection == 'Naturelle':  # Nu = Nombre de Nusselt & cas : convection naturelle
+    if convexion == 'Naturelle':  # Nu = Nombre de Nusselt & cas : convection naturelle
         if Re < 3 * 10 ** 5: # écoulement laminaire:
             Nu = 0, 479 * Gr ** (1 / 4)
         else: # écoulement turbulent:
