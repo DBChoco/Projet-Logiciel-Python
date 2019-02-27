@@ -95,7 +95,7 @@ Ha = (Me / Ma) * (pe / (patm - pe))  # Humidite absolue
 
 Fi = 5.67 * 10 ** (-8) * Tsky ** 4  # Flux indirect
 
-print('psat = ',psat,'\npe = ', pe, '\nTrose = ', Trose, '\nTsky = ', Tsky, '\nHa = ', Ha, '\nFi = ', Fi, '\nFd = ', Fd)  # debug
+print('psat = ',psat,'\npe = ', pe, '\nTrose = ', Trose, '\nTsky = ', Tsky, '\nHa = ', Ha,'\n Hamax = ',Hamax, '\nFi = ', Fi, '\nFd = ', Fd)  # debug
 
 
 ##########################################
