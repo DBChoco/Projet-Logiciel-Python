@@ -16,34 +16,41 @@ from scipy.optimize import fsolve
 """
 #Definition des variables utilisees
 """
-#condition environment
+#--------------------------------------------variable des conditions environments----------------------------------------
+
 Tamb = 273.5+25
+Hr = 0.65  #pour la belgique #Humidite relative
+altitude = 60  #altidude de ixelles par rapport a la mer de l'endroit ou il a le sechoir
+Fd = 900  # Flux direct produit par les lampes (W/m**2)
+
+#--------------------------------------------variable poivre/banane---------------------------------------------------------------------
+
+m_eau_init = 3  # 3kg d'eau par kg de matiere seche dans la banane
+m_eau_fin = 0.1  # 0.1 kg d'eau par kg de matiere seche dans la banane
+m_bananes = 0.5  # masse de bananes a secher en kg
+f_massique_seche = 0.25  # Fraction massique de matiere seche dans la banane
+Hainitbananes = 3  # humidite absolue initiale contenu dans les bananes
+Hafinbananes = 0.909  # humidite absolue finale contenu dans les bananes
+
+#---------------------------------------------variable sechoire--------------------------------------------
+
 Tvoulu = 273.5 + 65 #temperature idéal pour le séchoire
+HrMax = 0.20  # Humidite relatif maximal
+t = 8  # temps de sechage (heures)
+
 # General
 ################
 Ma = 0.8 * 2 * 14.01 + 0.2 * 2 * 16  # Masse molaire de l'air (sec) (mol/g)
 Me = 2 * 1.005 + 16  # Masse molaire de l'eau (mol/g)
 R = 8.314  # Constante universelle des gaz parfaits
 L = 2.454 * 18  # chaleur latente de vaporisation de l'eau
-t = 8  # temps de sechage (heures)
-HrMax = 20  # Humidite relatif maximal
-m_eau_init = 3  # 3kg d'eau par kg de matiere seche
-m_eau_fin = 0.1  # 0.1 kg d'eau par kg de matiere seche
-m_bananes = 0.5  # masse de bananes a secher en kg
-f_massique_seche = 0.25  # Fraction massique de matiere seche dans la banane
-Hainitbananes = 3  # humidite absolue initiale contenu dans les bananes
-Hafinbananes = 0.909  # humidite absolue finale contenu dans les bananes
 sigma = 5.67 * (10 ** (-8))
 La = 2250*10**3 # enthalpie de vaporisation / chaleur latente de l'eau (j/kg)
 
 # Environnement
 ################
-altitude = 60  #altidude de ixelles par rapport a la mer de l'endroit ou il a le sechoir
-patm = 101315 * (1 - (0.0065 * altitude / 288.15)) ** 5.255 #pression actuelle totale. Autrement dit la pression
-                                                                # ambiante dans le lieu ou se trouve le sechoir.(en Pa)
-Fd = 900  # Flux direct produit par les lampes (W/m**2)
+patm = 101315 * (1 - (0.0065 * altitude / 288.15)) ** 5.255 #pression actuelle totale. Autrement dit la pression ambiante dans le lieu ou se trouve le sechoir.(en Pa)
 Tref = 273.5 + 20  # température de référence (en Kelvin)
-Hr = 0.65  #pour la belgique en % #Humidite relative
 psatref = 2.3 * 10 ** 3  #pression saturfante a temperature Tref
 
 # Convection
@@ -61,7 +68,7 @@ beta = 1/(273.15+65) # Coefficient de dilatation
 # Effet de Serre
 ################
 h = 4  # coefficient d'echange de chaleur entre la surface et le toitµ
-T = 320
+#T = 320
 
 ###puissance
 Cva = 1.256*10**(3)#Capacité calorifique volumique de l'air(J m**(−3) K**(−1))
@@ -77,9 +84,8 @@ def psat_(Tamb):
 
 psat = psat_(Tamb)
 
-print("psat",psat)
 
-Hamax = 0.6217 * HrMax * psat / (patm - HrMax * psat)  #Humidite absolue maximale
+Hamax = (Me / Ma) * HrMax * psat / (patm - HrMax * psat)# * 0.6217  #Humidite absolue maximale
 
 pe = (Hr * psat)  # Pression partielle de vapeur
 
@@ -87,14 +93,11 @@ Trose = (math.log(pe / psat, math.e) * (-R / L) + 1 / Tamb) ** (-1)  # Temperatu
 
 Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))  # Tsky
 
-Ha = (Me / Ma) * ((Hr * psat) / (patm - (Hr * psat)))  # Humidite absolue
+Ha = (Me / Ma) * (pe / (patm - pe))  # Humidite absolue
 
 Fi = 5.67 * 10 ** (-8) * Tsky ** 4  # Flux indirect
 
-# Fd = 900  #Flux direct
-
-print('pe = ', pe, '\n', 'Trose = ', Trose, '\n', 'Tsky = ', Tsky, '\n', 'Ha = ', Ha, '\n', 'Fi = ', Fi, '\n',
-      'Fd = ', Fd)  # debug
+print('psat = ',psat,'\npe = ', pe, '\nTrose = ', Trose, '\nTsky = ', Tsky, '\nHa = ', Ha, '\nFi = ', Fi, '\nFd = ', Fd)  # debug
 
 
 ##########################################
@@ -154,8 +157,8 @@ def ConvectionH(mu, rho, L, g, beta, dT, cp, lambdaa):
 def func(x):
     P, Ts, Tp = x
 
-    return P - h * (Ts - T) - h * (Tp - T), Fd + Fi - P - (sigma * Tp ** 4), Fd + (sigma * Tp ** 4) - (sigma * Ts ** 4) \
-           - h * (Ts - T)
+    return P - h * (Ts - Tvoulu) - h * (Tp - Tvoulu), Fd + Fi - P - (sigma * Tp ** 4), Fd + (sigma * Tp ** 4) - (sigma * Ts ** 4) \
+           - h * (Ts - Tvoulu)
 
 
 def effet_de_serre():
