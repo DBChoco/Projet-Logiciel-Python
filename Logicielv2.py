@@ -32,6 +32,9 @@ Hafinbananes = 0.909  # humidité absolue finale contenu dans les bananes
 sigma = 5.67 * (10 ** (-8))
 T = 300
 
+###puissance
+Cva = 1,256*10**(3)#Capacité calorifique volumique de l'air(J m**(−3) K**(−1))
+
 #####################################################################
 """
 #Block Environnement
@@ -128,4 +131,6 @@ h = 2  # coefficient d'échange de chaleur entre la surface et le toit
 P = effetdeserre()[0]
 
 #puissance totale
+Qmin = ventillation()
+Ptot = Qmin*Cva
 
