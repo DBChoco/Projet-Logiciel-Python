@@ -72,10 +72,12 @@ Cva = 1.256*10**(3)#Capacité calorifique volumique de l'air(J m**(−3) K**(−
 #Block Environnement
 """
 def psat_(Tamb):
-    psatT = 2.718**((La/R)*(1/Tamb - 1/Tref))*psatref
+    psatT = math.e**((La/R)*(1/Tamb - 1/Tref))+psatref
     return psatT
 
 psat = psat_(Tamb)
+
+print("psat",psat)
 
 Hamax = 0.6217 * HrMax * psat / (patm - HrMax * psat)  #Humidite absolue maximale
 
@@ -111,7 +113,7 @@ Qmin = J / (Hamax - Ha)  # Debit d'air minimal (m^3/s)
 
 print("Le debit d'air minimal en m^3/s est de ", Qmin, " m^3/s")
 
-print('t_sec = ',t_sec,'m_matiereseche = ',m_matiereseche,'J = ',J,'Qmin = ',Qmin)  #debug
+print('t_sec = ',t_sec,'\n m_matiereseche = ',m_matiereseche,'\n J = ',J,'\n Qmin = ',Qmin)  #debug
 
 ##########################################
 """
@@ -166,6 +168,7 @@ Block dimensions
 def dimensions(P):
     # puissance totale
     Ptot = Qmin*Cva*(Tvoulu-Tamb)+ J * La
+    print("la puissance totale",Ptot)
     Surface  = Ptot/P
     return Surface
 
@@ -176,12 +179,12 @@ def dimensions(P):
 h = 6
 P, Ts, Tp = effet_de_serre()
 dT = (Tp - (273.15 + 25))
-print(dT)
+print("le delta T",dT)
 h = ConvectionH(mu, rho, L, g, beta, dT, cp, lambdaa)
 P, Ts, Tp = effet_de_serre()
-print(Tp)
-print('La puissance et de ', P, 'W/m^2')
-print (P, h)
+print("le Tp est ",Tp)
+print('La puissance est de ', P, 'W/m^2')
+print ("le h est ", h)
 Surface = dimensions(P)
 print("dimensions: ", Surface," m**2")
 
