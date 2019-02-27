@@ -22,9 +22,9 @@ from scipy.optimize import fsolve
 Ma = 0.8 * 2 * 14.01 + 0.2 * 2 * 16  # Masse molaire de l'air (sec) (mol/g)
 Me = 2 * 1.005 + 16  # Masse molaire de l'eau (mol/g)
 R = 8.314  # Constante universelle des gaz parfaits
-L = 2.454 * 18  # chaleur latente de vaporisation de l'eau
+deltaH = 2.454 * 18  # chaleur latente de vaporisation de l'eau
 t = 8  # temps de sechage (heures)
-HrMax = 0.8  # Humidite relative maximal
+HrMax = 0.2  # Humidite relative maximal
 m_bananes = 0.5  # masse de bananes a secher en kg
 f_massique_seche = 1/4  # Fraction massique de matiere seche dans la banane
 m_eau_init = 3  # 3kg d'eau par kg de matiere seche
@@ -32,7 +32,7 @@ m_eau_fin = 0.1  # 0.1 kg d'eau par kg de matiere seche
 Hainitbananes = 3  # humidite absolue initiale contenu dans les bananes
 Hafinbananes = 0.909  # humidite absolue finale contenu dans les bananes
 sigma = 5.67 * (10 ** (-8))
-La = 2250*10**3 # enthalpie de vaporisation / chaleur latente de l'eau (j/kg)
+La = 2250*(10**3) # enthalpie de vaporisation / chaleur latente de l'eau (j/kg)
 
 # Environnement
 ################
@@ -42,7 +42,7 @@ patm = 101315 * (1 - (0.0065 * altitude / 288.15)) ** 5.255 #pression actuelle t
 Fd = 900  # Flux direct produit par les lampes (W/m**2)
 Tref = 273.5 + 20  # (a l'interieur du batiment de teste) Temperature de l'air ambiante (en Kelvin)
 Hr = 0.65  #pour la belgique en % #Humidite relative
-psatref = 2.3 * 10 ** 3  #pression saturfante a temperature Tamb
+psatref = 2.3 * 10 ** 3  #pression saturfante a temperature Tamb (Pa)
 
 # Convection
 ################
@@ -69,15 +69,16 @@ Cva = 1.256*10**(3)  # Capacite calorifique volumique de l'air J m**-3 K**−1
 
 
 def psat_(Tamb):
-    psat = 2.718**((La/R)*(1/Tamb - 1/Tref))+psatref
+    psat = math.e**((deltaH/R)*(1/Tref - 1/Tamb))*psatref
+    print('psat = ', psat)
     return psat
 
 
-Tamb = 273.15 + 22
+Tamb = 273.15 + 25
 psat = psat_(Tamb)
 Hamax = (Me / Ma) * HrMax * psat / (patm - HrMax * psat)  #Humidite absolue maximale
 pe = (Hr * psat)  # Pression partielle de vapeur
-Trose = (math.log((pe / psat), math.e) * (-R / La) + 1 / Tamb) ** (-1) -237.15  # Temperature de rosee
+Trose = (math.log((pe / psat), math.e) * (-R / deltaH) + 1 / Tamb) ** (-1) -237.15  # Temperature de rosee
 Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))  # Tsky
 Ha = (Me / Ma) * Hr * psat / (patm - Hr * psat)  # Humidite absolue
 Fi = 5.67 * 10 ** (-8) * Tsky ** 4  # Flux indirect
@@ -152,8 +153,7 @@ def effet_de_serre():
     return P, Ts, Tp
 
 def dimensions(P):
-    Qe = (Qmin * 1.225)  # transition de m**3/s a kg/s
-    Ptot = Qe * Cva * ((273.15+65)-Tamb) + J * La  # puissance totale
+    Ptot = Qmin * Cva * ((273.15+65)-Tamb) + J * La  # puissance totale
     Surface  = Ptot/P
     print('Ptot = ', Ptot)
     return Surface
