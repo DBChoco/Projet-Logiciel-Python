@@ -1,5 +1,5 @@
 """
-Titre : Logiciel Python projet
+Titre : Logiciel.py Python projet
 Date début : 5 novembre 2018
 Auteurs : Groupe n°33 projet
 """
@@ -110,8 +110,7 @@ def effetdeserre():
 # Environnement
 ################
 altitude = 60  # altidude de ixelles par rapport a la mer de l'endroit ou il a le séchoire
-patm = 101315 * (1 - (
-            0.0065 * altitude / 288.15)) ** 5.255  # pression actuelle totale. Autrement dit la pression ambiante dans
+patm = 101315 * (1 - (0.0065 * altitude / 288.15)) ** 5.255  # pression actuelle totale. Autrement dit la pression ambiante dans
 # le lieu ou se trouve le séchoir.(en Pa)
 Fd = 900  # Flux direct produit par les lampes (W/m**2)
 Tamb = 291.15  # (a l'interieur du batiment de teste) Temperature de l'air ambiante (en Kelvin)
@@ -127,4 +126,6 @@ Fd, Fi, Ha = environnement()
 ################
 h = 2  # coefficient d'échange de chaleur entre la surface et le toit
 P = effetdeserre()[0]
+
+#puissance totale
 

@@ -1,5 +1,5 @@
 """
-Titre : Logiciel Python projet
+Titre : Logiciel.py Python projet
 Date debut : 5 novembre 2018
 Auteurs : Groupe n33 projet
 """

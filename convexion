@@ -1,4 +1,4 @@
-# Convexion
+convection = "Naturelle"
 # V =  # vitesse du fluide
 # L =  # longueur de la plaque
 # µ =  # viscosité dynamique du fluide
@@ -8,7 +8,7 @@
 # dT =  # Difference de température
 # cp =  # Chaleur spécifique du fluide
 # β =  # Coefficient de dilatation
-# convexion = 'Forcée' ou 'Naturelle' #Type de convexion
+# convection = 'Forcée' ou 'Naturelle' #Type de convexion
 ################
 
 def ConvexionH(µ, M, V, L, g, β, dT, cp, λ ,convexion):
@@ -30,7 +30,7 @@ def ConvexionH(µ, M, V, L, g, β, dT, cp, λ ,convexion):
         if Re < 3.104: # écoulement laminaire
             Nu = 0, 66 * Pr ** (1 / 3) * (Re ** (1 / 2))
         else: # écoulement turbulent
-            Nu = 0, 036 * (Pr ** (1 / 3)) * (Re ** (4 / 5))
+            Nu = 0.036 * (Pr ** (1 / 3)) * (Re ** (4 / 5))
 
     h = (λ * Nu) / L
 
