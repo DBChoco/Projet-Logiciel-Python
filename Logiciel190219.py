@@ -16,11 +16,11 @@ from scipy.optimize import fsolve
 """
 #Definition des variables utilisees
 """
-#--------------------------------------------variable des conditions environments----------------------------------------
+#--------------------------------------------variable des conditions environments-------------------------------------------------------
 
 Tamb = 273.5+25
 Hr = 0.65  #pour la belgique #Humidite relative
-altitude = 60  #altidude de ixelles par rapport a la mer de l'endroit ou il a le sechoir
+altitude = 60  #altidude de ixelles par rapport a la mer de l'endroit ou il a le sechoir (metre)
 Fd = 900  # Flux direct produit par les lampes (W/m**2)
 enLabo = 0 #est egal a zero si c'est dans le labo et a 1 si en exterieur
 
@@ -31,7 +31,7 @@ m_eau_fin = 0.1  # 0.1 kg d'eau par kg de matiere seche dans la banane
 m_bananes = 0.5  # masse de bananes a secher en kg
 f_massique_seche = 0.25  # Fraction massique de matiere seche dans la banane
 Hainitbananes = 3  # humidite absolue initiale contenu dans les bananes
-Hafinbananes = 0.909  # humidite absolue finale contenu dans les bananes
+Hafinbananes = 0.1  # humidite absolue finale contenu dans les bananes
 
 #---------------------------------------------variable sechoire--------------------------------------------
 
@@ -69,7 +69,7 @@ beta = 1/(273.15+65) # Coefficient de dilatation
 
 # Effet de Serre
 ################
-h = 4  # coefficient d'echange de chaleur entre la surface et le toit
+h = 4  # coefficient d'echange de chaleur entre la surface et le toit (kg K**-1 s**(-3))
 #T = 320
 
 ###puissance
@@ -80,7 +80,7 @@ Cva = 1.256*10**(3)#Capacité calorifique volumique de l'air(J m**(−3) K**(−
 """
 #Block Environnement
 """
-
+print("------------------envi------------------------")
 
 def psat_(T):
     psat = math.e**((Lamol/R)*(1/Tref - 1/T))*psatref
@@ -90,18 +90,18 @@ psat = psat_(Tamb)
 psatT=psat_(Tvoulu)
 Hamax = (Me / Ma) * HrMax * psatT / (patm - HrMax * psatT) #Humidite absolue maximale
 pe = (Hr * psat)  # Pression partielle de vapeur
-Trose = (math.log((pe / psat), math.e) * (-R / Lamol) + 1 / Tamb) ** (-1)-237.15  # Temperature de rosee(Celsius)
+Trose = (math.log((pe / psat), math.e) * (-R / Lamol) + 1 / Tamb) ** (-1)-273.15  # Temperature de rosee(Celsius)
 Ha = (Me / Ma) * (pe / (patm - pe))  # Humidite absolue
-Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2) + enLabo *0.013*math.cos((2*math.pi*8)/24))**(1/4)# Tsky
+Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2) + enLabo *0.013*math.cos((2*math.pi*t)/24))**(1/4)# Tsky
 Hamax = (Me / Ma) * HrMax * psatT / (patm - HrMax * psatT)  # Humidite absolue maximale
 Fi = sigma * (Tsky ** 4)  # Flux indirect
-print('psat = ',psat,'\npe = ', pe, '\nTrose = ', Trose, '\nTsky = ', Tsky, '\nHa = ', Ha,'\n Hamax = ',Hamax, '\nFi = ', Fi, '\nFd = ', Fd)  # debug
+print('psat = ',psat,'\npsatT : ',psatT,'\npe = ', pe, '\nTrose = ', Trose, '\nTsky = ', Tsky, '\nHa = ', Ha,'\nHamax = ',Hamax, '\nFi = ', Fi, '\nFd = ', Fd)  # debug
 
 ##########################################
 """
 #Block Ventilation
 """
-
+print("-------------------venti-------------------------")
 t_sec = t * 60 * 60  # Temps de sechage en secondes
 
 m_matiereseche = f_massique_seche * m_bananes  # Masse de matiere seche
@@ -113,7 +113,7 @@ Qmin = J / (Hamax - Ha)  # Debit d'air minimal (m^3/s)
 
 print("Le debit d'air minimal en m^3/s est de ", Qmin, " m^3/s")
 
-print('t_sec = ',t_sec,'\n m_matiereseche = ',m_matiereseche,'\n J = ',J,'\n Qmin = ',Qmin)  #debug
+print('t_sec = ',t_sec,'\nm_matiereseche = ',m_matiereseche,'\nJ = ',J,'\nQmin = ',Qmin)  #debug
 
 ##########################################
 """
@@ -150,11 +150,11 @@ def ConvectionH(mu, rho, L, g, beta, dT, cp, lambdaa):
 #Block Effet-de-Serre
 """
 
-
+print("----------------------------effet de serre--------------------------")
 def func(x):
     P, Ts, Tp = x
-    return P - h * (Ts - Tamb) - h * (Tp - Tamb), Fd + Fi - P - (sigma * Tp ** 4), Fd + (sigma * Tp ** 4) - (sigma * Ts ** 4)\
-           - h * (Ts - Tamb)
+    return P - h * (Ts - Tvoulu) - h * (Tp - Tvoulu), Fd + Fi - P - (sigma * Tp ** 4), Fd + (sigma * Tp ** 4) - (sigma * Ts ** 4)\
+           - h * (Ts - Tvoulu)
 
 
 
@@ -177,7 +177,6 @@ def dimensions(P):
 
 # Lancement du logiciel
 
-h = 4
 P, Ts, Tp = effet_de_serre()
 dT = (Tp - (273.15 + 25))
 
@@ -185,6 +184,7 @@ print("le delta T",dT)
 h = ConvectionH(mu, rho, L, g, beta, dT, cp, lambdaa)
 P, Ts, Tp = effet_de_serre()
 print("le Tp est ",Tp)
+print("le Ts est ",Ts)
 print('La puissance est de ', P, 'W/m^2')
 print ("le h est ", h)
 Surface = dimensions(P)
