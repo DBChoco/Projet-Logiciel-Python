@@ -82,11 +82,11 @@ Cva = 1.256*10**(3)#Capacité calorifique volumique de l'air(J m**(−3) K**(−
 
 def psat_(Tamb):
     psat = math.e**((deltaH/R)*(1/Tref - 1/Tamb))*psatref
-    print('psat = ', psat)
     return psat
 
 psat = psat_(Tamb)
-Hamax = (Me / Ma) * HrMax * psat / (patm - HrMax * psat) #Humidite absolue maximale
+psatT=psat_(Tvoulu)
+Hamax = (Me / Ma) * HrMax * psatT / (patm - HrMax * psatT) #Humidite absolue maximale
 pe = (Hr * psat)  # Pression partielle de vapeur
 Trose = (math.log((pe / psat), math.e) * (-R / deltaH) + 1 / Tamb) ** (-1) -237.15  # Temperature de rosee
 Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))  # Tsky
