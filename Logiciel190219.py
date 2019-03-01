@@ -61,7 +61,7 @@ L = 0.8 # longueur de la plaque
 mu = 1.8*10**(-5)  # (Pa.s) viscosite dynamique du fluide
 rho = 1.225  # (kg/m**3) masse volumique du fluide
 lambdaa = 0.0262  # (W/m.K) conductivite du fluide
-g =  9.81 # Force de pesanteur
+g =  9.81 # Force de pesanteur (m*s**(-2))
 #dT =  # Difference de temperature
 cp = 1004  # (J/Kg.K) Chaleur specifique du fluide
 beta = 1/(273.15+65) # Coefficient de dilatation
@@ -88,12 +88,12 @@ psat = psat_(Tamb)
 psatT=psat_(Tvoulu)
 Hamax = (Me / Ma) * HrMax * psatT / (patm - HrMax * psatT) #Humidite absolue maximale
 pe = (Hr * psat)  # Pression partielle de vapeur
-Trose = (math.log((pe / psat), math.e) * (-R / deltaH) + 1 / Tamb) ** (-1) -237.15  # Temperature de rosee
+Trose = (math.log((pe / psat), math.e) * (-R / deltaH) + 1 / Tamb) ** (-1) -237.15  # Temperature de rosee(Celsius)
 Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))  # Tsky
 
 Ha = (Me / Ma) * (pe / (patm - pe))  # Humidite absolue
 
-Fi = 5.67 * 10 ** (-8) * Tsky ** 4  # Flux indirect
+Fi = 5.67 * 10**(-8) * Tsky**(4)  # Flux indirect
 
 print('psat = ',psat,'\npe = ', pe, '\nTrose = ', Trose, '\nTsky = ', Tsky, '\nHa = ', Ha,'\n Hamax = ',Hamax, '\nFi = ', Fi, '\nFd = ', Fd)  # debug
 
