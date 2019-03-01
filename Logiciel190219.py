@@ -51,7 +51,7 @@ La = 2250*(10**3) # enthalpie de vaporisation / chaleur latente de l'eau (j/kg)
 ################
 patm = 101315 * (1 - (0.0065 * altitude / 288.15)) ** 5.255 #pression actuelle totale. Autrement dit la pression ambiante dans le lieu ou se trouve le sechoir.(en Pa)
 Tref = 273.5 + 20  # température de référence (en Kelvin)
-psatref = 2.3 * 10 ** 3  #pression saturfante a temperature Tref
+psatref = 2.3 * 10 ** 3  #pression saturfante a temperature Tref (en pascals)
 
 
 # Convection
@@ -86,7 +86,7 @@ def psat_(Tamb):
     return psat
 
 psat = psat_(Tamb)
-Hamax = (Me / Ma) * HrMax * psat / (patm - HrMax * psat)# * 0.6217  #Humidite absolue maximale
+Hamax = (Me / Ma) * HrMax * psat / (patm - HrMax * psat) #Humidite absolue maximale
 pe = (Hr * psat)  # Pression partielle de vapeur
 Trose = (math.log((pe / psat), math.e) * (-R / deltaH) + 1 / Tamb) ** (-1) -237.15  # Temperature de rosee
 Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))  # Tsky
