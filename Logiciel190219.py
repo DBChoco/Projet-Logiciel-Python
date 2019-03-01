@@ -88,8 +88,8 @@ psat = psat_(Tamb)
 psatT=psat_(Tvoulu)
 Hamax = (Me / Ma) * HrMax * psatT / (patm - HrMax * psatT) #Humidite absolue maximale
 pe = (Hr * psat)  # Pression partielle de vapeur
-Trose = (math.log((pe / psat), math.e) * (-R / deltaH) + 1 / Tamb) ** (-1) -237.15  # Temperature de rosee(Celsius)
-Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))  # Tsky
+Trose = (math.log((pe / psat), math.e) * (-R / deltaH) + 1 / Tamb) ** (-1)-237.15  # Temperature de rosee(Celsius)
+Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))**(1/4) # Tsky
 
 Ha = (Me / Ma) * (pe / (patm - pe))  # Humidite absolue
 
