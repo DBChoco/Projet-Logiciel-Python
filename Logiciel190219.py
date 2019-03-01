@@ -43,10 +43,9 @@ t = 8  # temps de sechage (heures)
 Ma = 0.8 * 2 * 14.01 + 0.2 * 2 * 16  # Masse molaire de l'air (sec) (mol/g)
 Me = 2 * 1.005 + 16  # Masse molaire de l'eau (mol/g)
 R = 8.314  # Constante universelle des gaz parfaits
-L = 2.454 * 18  # chaleur latente de vaporisation de l'eau
-
+deltaH = 2.454 * 18  # chaleur latente de vaporisation de l'eau
 sigma = 5.67 * (10 ** (-8))
-La = 2250*10**3 # enthalpie de vaporisation / chaleur latente de l'eau (j/kg)
+La = 2250*(10**3) # enthalpie de vaporisation / chaleur latente de l'eau (j/kg)
 
 # Environnement
 ################
@@ -82,13 +81,14 @@ Cva = 1.256*10**(3)#Capacité calorifique volumique de l'air(J m**(−3) K**(−
 """
 
 def psat_(Tamb):
-    psatT = math.e**((La/R)*(1/Tamb - 1/Tref))+psatref
-    return psatT
+    psat = math.e**((deltaH/R)*(1/Tref - 1/Tamb))*psatref
+    print('psat = ', psat)
+    return psat
 
 psat = psat_(Tamb)
 Hamax = (Me / Ma) * HrMax * psat / (patm - HrMax * psat)# * 0.6217  #Humidite absolue maximale
 pe = (Hr * psat)  # Pression partielle de vapeur
-Trose = (math.log((pe / psat), math.e) * (-R / La) + 1 / Tamb) ** (-1) -237.15  # Temperature de rosee
+Trose = (math.log((pe / psat), math.e) * (-R / deltaH) + 1 / Tamb) ** (-1) -237.15  # Temperature de rosee
 Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))  # Tsky
 
 Ha = (Me / Ma) * (pe / (patm - pe))  # Humidite absolue
