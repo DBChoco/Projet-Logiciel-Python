@@ -22,6 +22,7 @@ Tamb = 273.5+25
 Hr = 0.65  #pour la belgique #Humidite relative
 altitude = 60  #altidude de ixelles par rapport a la mer de l'endroit ou il a le sechoir
 Fd = 900  # Flux direct produit par les lampes (W/m**2)
+enLabo = 0 #est egal a zero si c'est dans le labo et a 1 si en exterieur
 
 #--------------------------------------------variable poivre/banane---------------------------------------------------------------------
 
@@ -43,15 +44,15 @@ t = 8  # temps de sechage (heures)
 Ma = 0.8 * 2 * 14.01 + 0.2 * 2 * 16  # Masse molaire de l'air (sec) (mol/g)
 Me = 2 * 1.005 + 16  # Masse molaire de l'eau (mol/g)
 R = 8.314  # Constante universelle des gaz parfaits
-deltaH = 2.454 * 18  # chaleur latente de vaporisation de l'eau
-sigma = 5.67 * (10 ** (-8))
-La = 2250*(10**3) # enthalpie de vaporisation / chaleur latente de l'eau (j/kg)
-
 # Environnement
 ################
 patm = 101315 * (1 - (0.0065 * altitude / 288.15)) ** 5.255 #pression actuelle totale. Autrement dit la pression ambiante dans le lieu ou se trouve le sechoir.(en Pa)
 Tref = 273.5 + 20  # température de référence (en Kelvin)
 psatref = 2.3 * 10 ** 3  #pression saturfante a temperature Tref (en pascals)
+Lakg = 2250*10**3 # enthalpie de vaporisation / chaleur latente de l'eau (j/kg)
+Lamol = 2250*18 # enthalpie de vaporisation / chaleur latente de l'eau (j/mol)
+sigma = 5.670367 * (10 ** (-8))
+Tideal = 273.15 + 65
 
 
 # Convection
@@ -80,23 +81,21 @@ Cva = 1.256*10**(3)#Capacité calorifique volumique de l'air(J m**(−3) K**(−
 #Block Environnement
 """
 
-def psat_(Tamb):
-    psat = math.e**((deltaH/R)*(1/Tref - 1/Tamb))*psatref
+
+def psat_(T):
+    psat = math.e**((Lamol/R)*(1/Tref - 1/T))*psatref
     return psat
 
 psat = psat_(Tamb)
 psatT=psat_(Tvoulu)
 Hamax = (Me / Ma) * HrMax * psatT / (patm - HrMax * psatT) #Humidite absolue maximale
 pe = (Hr * psat)  # Pression partielle de vapeur
-Trose = (math.log((pe / psat), math.e) * (-R / deltaH) + 1 / Tamb) ** (-1)-237.15  # Temperature de rosee(Celsius)
-Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))**(1/4) # Tsky
-
+Trose = (math.log((pe / psat), math.e) * (-R / Lamol) + 1 / Tamb) ** (-1)-237.15  # Temperature de rosee(Celsius)
 Ha = (Me / Ma) * (pe / (patm - pe))  # Humidite absolue
-
-Fi = 5.67 * 10**(-8) * Tsky**(4)  # Flux indirect
-
+Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2) + enLabo *0.013*math.cos((2*math.pi*8)/24))**(1/4)# Tsky
+Hamax = (Me / Ma) * HrMax * psatT / (patm - HrMax * psatT)  # Humidite absolue maximale
+Fi = sigma * (Tsky ** 4)  # Flux indirect
 print('psat = ',psat,'\npe = ', pe, '\nTrose = ', Trose, '\nTsky = ', Tsky, '\nHa = ', Ha,'\n Hamax = ',Hamax, '\nFi = ', Fi, '\nFd = ', Fd)  # debug
-
 
 ##########################################
 """
@@ -169,7 +168,7 @@ Block dimensions
 """
 def dimensions(P):
     # puissance totale
-    Ptot = Qmin*Cva*(Tvoulu-Tamb)+ J * La
+    Ptot = Qmin*Cva*(Tvoulu-Tamb)+ J * Lakg#la puissance totale
     print("la puissance totale",Ptot)
     Surface  = Ptot/P
     return Surface
@@ -178,7 +177,7 @@ def dimensions(P):
 
 # Lancement du logiciel
 
-h = 3
+h = 4
 P, Ts, Tp = effet_de_serre()
 dT = (Tp - (273.15 + 25))
 
@@ -190,6 +189,7 @@ print('La puissance est de ', P, 'W/m^2')
 print ("le h est ", h)
 Surface = dimensions(P)
 print("dimensions: ", Surface," m**2")
+print(psat_(273.15+65))
 
 
 
