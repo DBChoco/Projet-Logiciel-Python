@@ -57,7 +57,7 @@ beta = 1 /(273.15+65)  # (1/K) Coefficient de dilatation
 # Effet de Serre
 ################
 h = 4.18  # coefficient d'echange de chaleur entre la surface et le toit
-Cva = 1256  # Capacite calorifique volumique de l'air J m**-3 K**−1
+Cva = 1004  # Capacite calorifique massique de l'air J kg**-1 K**−1
 
 #####################################################################
 """
@@ -95,9 +95,9 @@ m_matiereseche = f_massique_seche * m_bananes  # Masse de matiere seche
 J = ((Hainitbananes - Hafinbananes) * m_matiereseche) / t_sec  # Masse d'eau evaporee par seconde (contenue dans le
 # poivre/banane)
 
-Qmin = J / (Hamax - Ha)  # Debit d'air minimal (m^3/s)
+Qmin = J / (Hamax - Ha)  # Debit d'air minimal (k/s)
 
-print("Le debit d'air minimal en m^3/s est de ", Qmin, " m^3/s")
+print("Le debit d'air minimal en k/s est de ", Qmin, "k/s")
 
 print('t_sec = ',t_sec,'m_matiereseche = ',m_matiereseche,'J = ',J,'Qmin = ',Qmin)  #debug
 
