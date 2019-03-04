@@ -1,7 +1,8 @@
 """
 Titre : Logiciel Python projet
 Date debut : 5 novembre 2018
-Auteurs : Groupe n33 projet
+Date de finalisation du logiciel : 04/03/19
+Auteurs : Groupe n°33 projet
 """
 #####################################################################
 """
@@ -25,39 +26,39 @@ R = 8.314  # (J/(mol.K) Constante universelle des gaz parfaits
 Lakg = 2220 * 10 ** 3  # enthalpie de vaporisation / chaleur latente de l'eau (J/kg)
 Lamol = 2220 * 18  # enthalpie de vaporisation / chaleur latente de l'eau (J/mol)
 t = 8  # temps de sechage (heures)
-HrMax = 0.2  # Humidite relative maximal
+HrMax = 0.2  # Humidite relative maximal (adimensionnel)
 m_bananes = 0.5  # masse de bananes a secher en kg
 f_massique_seche = 1/4  # Fraction massique de matiere seche dans la banane
 Hainitbananes = 3  # humidite absolue initiale contenu dans les bananes
 Hafinbananes = 0.1  # humidite absolue finale contenu dans les bananes
 sigma = 5.670367 * (10 ** (-8)) #(W.m**-2K**-4)
-Tideal = 273.15 + 65 #K
+
 
 
 # Environnement
 ################
-altitude = 60  #altidude de ixelles par rapport a la mer de l'endroit ou il a le sechoir
-patm = 101315 * (1 - (0.0065 * altitude / 288.15)) ** 5.255 #pression actuelle totale. Autrement dit la pression
-                                                                # ambiante dans le lieu ou se trouve le sechoir.(en Pa)
+patm = 995 * 10**2 # (Pa) Pression atmospherique a bruxelles le mercredi 6 mars 13h
 Fd = 900  # Flux direct produit par les lampes (W/m**2)
 Tref = 273.5 + 20  # (a l'interieur du batiment de teste) Temperature de l'air ambiante (en Kelvin)
 Hr = 0.70  #pour la belgique en % #Humidite relative
 psatref = 2340 #pression saturfante a temperature Tamb
+Tamb = 273.15 + 18 #Temperature ambiante (K)
+Tideal = 273.15 + 65 #Temperature voulue a l'interieur de la serre (K)
 
 # Convection
 ################
-L = 0.8  # (m) longueur de la plaque
+L = 0.6  # (m) longueur de la plaque
 mu = 1.8*10**(-5)  # (Pa.s) viscosite dynamique du fluide
 rho = 1.225  # (kg/m**3) masse volumique du fluide
 lambdaa = 0.0262  # (W/m.K) conductivite du fluide
 g = 9.81  # (m/s**2) Force de pesanteur
 cp = 1004  # (J/Kg.K) Chaleur specifique du fluide
-beta = 1 /(273.15+65)  # (1/K) Coefficient de dilatation
+beta = 1 /Tideal  # (1/K) Coefficient de dilatation
 
 # Effet de Serre
 ################
 h = 4.18  # coefficient d'echange de chaleur entre la surface et le toit
-Cva = 1004  # Capacite calorifique massique de l'air J kg**-1 K**−1
+Cma = 1004  # Capacite calorifique massique de l'air J kg**-1 K**−1
 
 #####################################################################
 """
@@ -65,19 +66,19 @@ Cva = 1004  # Capacite calorifique massique de l'air J kg**-1 K**−1
 """
 
 
-def psat_(T):
+def psat_(T): #Formule de Clausius Clap
     psat = psatref * (math.e)**((Lamol/R)*(1/Tref - 1/T))
     return psat
 
 
-Tamb = 273.15 + 18
-psat = psat_(Tamb)
+psat = psat_(Tamb) #Calcul de la p de sat a Tamb
 pe = (Hr * psat)  # Pression partielle de vapeur
 Trose = (math.log(Hr, math.e) * (-R / Lamol) + (1 / Tamb)) ** (-1) - 273.15  # Temperature de rosee
 Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))**(1/4)# Tsky
-Hamax = (Me / Ma) * ((HrMax * psat_(273.15+65)) / (patm - HrMax * psat_(273.15+65)))  # Humidite absolue maximale
+Hamax = (Me / Ma) * ((HrMax * psat_(Tideal)) / (patm - HrMax * psat_(Tideal)))  # Humidite absolue maximale
 Ha = (Me / Ma) * (pe / (patm - pe))  # Humidite absolue
-Fi = sigma * (Tsky ** 4)  # Flux indirect
+Fi = 100 #Flux indirect, pour le prototype de laboratoire il est plus correct de le considerer constant.
+#Fi = sigma * (Tsky ** 4)  # Flux indirect
 # Fd = 900  #Flux direct
 
 print('pe = ', pe, '\n', 'Trose = ', Trose, '\n', 'Tsky = ', Tsky, '\n', 'Ha = ', Ha, '\n','Hamax = ', Hamax, '\n',
@@ -109,9 +110,7 @@ print('t_sec = ',t_sec,'m_matiereseche = ',m_matiereseche,'J = ',J,'Qmin = ',Qmi
 
 def ConvectionH(mu, rho, L, g, beta, dT, cp, lambdaa):
 
-    alpha = lambdaa/(rho * cp)
-
-    V = Qmin/0.0030
+    V = Qmin/0.0030 #vitesse du fluide (air)
 
     v = mu / rho  # viscosite cinematique du fluide m**2/s
 
@@ -121,8 +120,7 @@ def ConvectionH(mu, rho, L, g, beta, dT, cp, lambdaa):
 
     Pr = (mu * cp)/lambdaa  # Nombre de Prandtl
 
-    Ra = Pr * Gr
-
+    Ra = Pr * Gr # Nombre de Nusselt
     Nu = 0.54*Ra**(1/4)
 
     print("Gr/Re**2 = ", Gr/Re**2)
@@ -150,8 +148,8 @@ def effet_de_serre():
     P, Ts, Tp = fsolve(func, (1, 1, 1))
     return P, Ts, Tp
 
-def dimensions(P):
-    Ptot = Qmin * Cva * ((273.15+65)-Tamb) + J * Lakg  # puissance totale
+def dimensions(P): #calcul des dimensions du prototype
+    Ptot = Qmin * Cma * (Tideal-Tamb) + J * Lakg  # puissance totale
     Surface  = Ptot/P
     print('Ptot = ', Ptot)
     return Surface
@@ -160,7 +158,7 @@ def dimensions(P):
 
 # Lancement du logiciel
 
-h = 4.18
+h = 4.35
 P, Ts, Tp = effet_de_serre()
 dT = (Ts - Tideal)
 print('dT = ',dT)
