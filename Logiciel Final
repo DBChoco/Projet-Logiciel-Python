@@ -22,43 +22,43 @@ from scipy.optimize import fsolve
 ################
 Ma = 0.8 * 2 * 14.01 + 0.2 * 2 * 16  # Masse molaire de l'air (sec) (mol/g)
 Me = 2 * 1.005 + 16  # Masse molaire de l'eau (mol/g)
-R = 8.314  # (J/(mol.K) Constante universelle des gaz parfaits
+R = 8.314  # Constante universelle des gaz parfaits (J/(mol.K)
 Lakg = 2220 * 10 ** 3  # enthalpie de vaporisation / chaleur latente de l'eau (J/kg)
 Lamol = 2220 * 18  # enthalpie de vaporisation / chaleur latente de l'eau (J/mol)
 t = 8  # temps de sechage (heures)
 HrMax = 0.2  # Humidite relative maximal (adimensionnel)
-m_bananes = 0.5  # masse de bananes a secher en kg
-f_massique_seche = 1/4  # Fraction massique de matiere seche dans la banane
-Hainitbananes = 3  # humidite absolue initiale contenu dans les bananes
-Hafinbananes = 0.1  # humidite absolue finale contenu dans les bananes
+m_bananes = 0.5  # masse de bananes a secher (kg)
+f_massique_seche = 1/4  # Fraction massique de matiere seche dans la banane (adimensionnel)
+Hainitbananes = 3  # humidite absolue initiale contenu dans les bananes (adimensionnel)
+Hafinbananes = 0.1  # humidite absolue finale contenu dans les bananes (adimensionnel)
 sigma = 5.670367 * (10 ** (-8)) #(W.m**-2K**-4)
 
 
 
 # Environnement
 ################
-patm = 995 * 10**2 # (Pa) Pression atmospherique a bruxelles le mercredi 6 mars 13h
+patm = 995 * 10**2 # Pression atmospherique a bruxelles le mercredi 6 mars 13h (Pa)
 Fd = 900  # Flux direct produit par les lampes (W/m**2)
 Tref = 273.5 + 20  # (a l'interieur du batiment de teste) Temperature de l'air ambiante (en Kelvin)
-Hr = 0.70  #pour la belgique en % #Humidite relative
-psatref = 2340 #pression saturfante a temperature Tamb
+Hr = 0.70  #pour la belgique en % #Humidite relative (adimensionnel)
+psatref = 2340 #pression saturfante a temperature Tamb (Pa)
 Tamb = 273.15 + 18 #Temperature ambiante (K)
 Tideal = 273.15 + 65 #Temperature voulue a l'interieur de la serre (K)
 
 # Convection
 ################
-L = 0.6  # (m) longueur de la plaque
-mu = 1.8*10**(-5)  # (Pa.s) viscosite dynamique du fluide
-rho = 1.225  # (kg/m**3) masse volumique du fluide
-lambdaa = 0.0262  # (W/m.K) conductivite du fluide
-g = 9.81  # (m/s**2) Force de pesanteur
-cp = 1004  # (J/Kg.K) Chaleur specifique du fluide
-beta = 1 /Tideal  # (1/K) Coefficient de dilatation
+L = 0.6  #  longueur de la plaque / longueur traversée par le fluide(m)
+mu = 1.8*10**(-5)  # viscosite dynamique du fluide (Pa.s)
+rho = 1.225  # masse volumique du fluide (kg/m**3)
+lambdaa = 0.0262  # conductivite du fluide (W/m.K)
+g = 9.81  # Force de pesanteur (m/s**2)
+cp = 1004  # Chaleur specifique du fluide (J/Kg.K)
+beta = 1 /Tideal  # Coefficient de dilatation (1/K)
 
 # Effet de Serre
 ################
-h = 4.18  # coefficient d'echange de chaleur entre la surface et le toit
-Cma = 1004  # Capacite calorifique massique de l'air J kg**-1 K**−1
+h = 4.18  # coefficient d'echange de chaleur entre la surface et le toit (W/m**2·K**-1)
+Cma = 1004  # Capacite calorifique massique de l'air (J kg**-1 K**−1 ) # = Cp
 
 #####################################################################
 """
@@ -78,8 +78,8 @@ Tsky = Tamb * (0.711 + (0.0056 * Trose) + (7.3 * (10 ** -5) * Trose ** 2))**(1/4
 Hamax = (Me / Ma) * ((HrMax * psat_(Tideal)) / (patm - HrMax * psat_(Tideal)))  # Humidite absolue maximale
 Ha = (Me / Ma) * (pe / (patm - pe))  # Humidite absolue
 Fi = 100 #Flux indirect, pour le prototype de laboratoire il est plus correct de le considerer constant.
-#Fi = sigma * (Tsky ** 4)  # Flux indirect
-# Fd = 900  #Flux direct
+#Fi = sigma * (Tsky ** 4)  # Flux indirect (W/m**2)
+# Fd = 900  #Flux direct considéré constant # Flux direct produit par les lampes (W/m**2)
 
 print('pe = ', pe, '\n', 'Trose = ', Trose, '\n', 'Tsky = ', Tsky, '\n', 'Ha = ', Ha, '\n','Hamax = ', Hamax, '\n',
       'Fi = ', Fi, '\n', 'Fd = ', Fd)  # debug
@@ -121,6 +121,7 @@ def ConvectionH(mu, rho, L, g, beta, dT, cp, lambdaa):
     Pr = (mu * cp)/lambdaa  # Nombre de Prandtl
 
     Ra = Pr * Gr # Nombre de Nusselt
+
     Nu = 0.54*Ra**(1/4)
 
     print("Gr/Re**2 = ", Gr/Re**2)
