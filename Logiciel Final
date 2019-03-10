@@ -57,7 +57,7 @@ beta = 1 /Tideal  # Coefficient de dilatation (1/K)
 
 # Effet de Serre
 ################
-h = 4.18  # coefficient d'echange de chaleur entre la surface et le toit (W/m**2·K**-1)
+h = 4.35 voir partie "lancement du logiciel"  # coefficient d'echange de chaleur entre la surface et le toit (W/m**2·K**-1)
 Cma = 1004  # Capacite calorifique massique de l'air (J kg**-1 K**−1 ) # = Cp
 
 #####################################################################
